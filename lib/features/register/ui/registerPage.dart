@@ -17,6 +17,13 @@ class _RegisterPageState extends State<RegisterPage> {
   TextEditingController passController = TextEditingController();
   TextEditingController confirmPassController = TextEditingController();
 
+  RegisterBloc registerBloc = RegisterBloc();
+
+  @override
+  void initState() {
+  registerBloc.add(RegisterInitialEvent());
+    super.initState();
+  }
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -25,7 +32,13 @@ class _RegisterPageState extends State<RegisterPage> {
       appBar: AppBar(
         title: const Text("Register"),
       ),
-      body: BlocBuilder<RegisterBloc, RegisterState>(
+      body: BlocConsumer<RegisterBloc, RegisterState>(
+        bloc: registerBloc,
+        listener: (BuildContext context, RegisterState state){
+          if(state is RegisterSuccessActionState){
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Register Successfully")));
+          }
+        },
         builder: (context, state) {
           return Container(
             padding: const EdgeInsets.all(16.0),
@@ -42,7 +55,12 @@ class _RegisterPageState extends State<RegisterPage> {
                   ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
+                        final name = nameController.text.trim();
+                        final email = emailController.text.trim();
+                        final password = passController.text.trim();
+                        registerBloc.add(RegisterUserEvent(name: name, email: email, password: password));
                         print("Successfully Registered");
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=>LoginPage()));
                       } else {
                         print("Registration Failed");
                       }
